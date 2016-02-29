@@ -1,9 +1,27 @@
-%% Parameters.
-mainFolder = 'Y:\mousebrainmicro\data\2015-07-11\Tiling';
-outputFolder = 'Y:\mousebrainmicro\data\Dashboard training set';
-imSize = [1536,1024];
-frames = [120:129];
-bufferSize = 500;
+function generateAVGs(mainFolder,outputFolder,varargin)
+%genAVGs. Generates stack averages off all tiles in Fetch generated data
+%folder <Date\00\ID>
+%   Function scans content of main folder and outputs AVGs stacks at
+%   requested location. Used for testing quality control.
+%
+% Syntax:  bilinearJobList( mainFolder,outputFolder, imSize, frames, bufferSize )
+%
+% Inputs:
+%       mainFolder          - Main directory of tile database (must be full,unmapped, path).
+%       outputFolder        - Location where resulting AVG stacks will be
+%                             saved.
+% Optional Inputs:
+%       imSize              - Image size
+%       frames              - frames used for average.
+%       bufferSize          - number of frames in output stacks
+
+
+%% Setting optional inputs.
+if nargin<3, imSize = [1536,1024];end
+if nargin<4, frames = [120:129];end
+if nargin<5, bufferSize = 500;end
+
+%% Tiff library warning.
 warning off MATLAB:imagesci:tiffmexutils:libtiffWarning
 
 %% Prepare stack.
@@ -36,20 +54,22 @@ for iDay = 1:nDays
         nFiles = size(fileList,1);
         for iFile = 1:nFiles
             cFile = fileList{iFile};
-            fprintf('%s - %s - %s\tFrame: %i File Frame: %i\n',cDay,cSub,cFile,count,frameCount);
             %% Read file.
-            I = readTifFast(fullfile(mainFolder,cDay,cSub,cFile,[cFile,'-ngc.0.tif']), imSize,frames, 'uint16');
-            I = mean(I,3);
-            stack(:,:,frameCount) = I;
-            
-            %% Check if buffer size is reached and start writing.
-            if mod(frameCount,bufferSize) == 0
-                writeTifFast( stack, fullfile(outputFolder,[num2str(count),'.tif']), 'uint16');
-                frameCount = 0;
-                stack = zeros(imSize(1), imSize(2), bufferSize, 'uint16');
+            try % Catch smaller file
+                I = readTifFast(fullfile(mainFolder,cDay,cSub,cFile,[cFile,'-ngc.0.tif']), imSize,frames, 'uint16');
+                fprintf('%s - %s - %s\tFrame: %i File Frame: %i\n',cDay,cSub,cFile,count,frameCount);
+                I = mean(I,3);
+                stack(:,:,frameCount) = I;
+
+                %% Check if buffer size is reached and start writing.
+                if mod(frameCount,bufferSize) == 0
+                    writeTifFast( stack, fullfile(outputFolder,[num2str(count),'.tif']), 'uint16');
+                    frameCount = 0;
+                    stack = zeros(imSize(1), imSize(2), bufferSize, 'uint16');
+                end
+                count = count + 1;
+                frameCount = frameCount + 1;
             end
-            count = count + 1;
-            frameCount = frameCount + 1;
         end
     end
 end
