@@ -26,6 +26,9 @@ warning off MATLAB:imagesci:tiffmexutils:libtiffWarning
 
 %% Prepare stack.
 stack = zeros(imSize(1), imSize(2), bufferSize, 'uint16');
+%% Prepare Output text file.
+fid = fopen(fullfile(outputFolder,'pathlist.txt'),'w');
+if fid==-1, error('Could not create pathlist file for writing'); end
 
 %% Get folder list.
 dayList = dir(mainFolder);
@@ -60,7 +63,7 @@ for iDay = 1:nDays
                 fprintf('%s - %s - %s\tFrame: %i File Frame: %i\n',cDay,cSub,cFile,count,frameCount);
                 I = mean(I,3);
                 stack(:,:,frameCount) = I;
-
+                fprintf(fid,'%s\n',fullfile(mainFolder,cDay,cSub,cFile,[cFile,'-ngc.0.tif']));
                 %% Check if buffer size is reached and start writing.
                 if mod(frameCount,bufferSize) == 0
                     writeTifFast( stack, fullfile(outputFolder,[num2str(count),'.tif']), 'uint16');
@@ -73,3 +76,4 @@ for iDay = 1:nDays
         end
     end
 end
+fclose(fid);
