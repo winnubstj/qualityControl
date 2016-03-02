@@ -16,9 +16,6 @@ function [ Output ] = fastProtoBuf( fileLoc, fields, varargin )
 % Outputs:
 %       Output              - Structure containing the requested values
 
-% fileLoc = 'Y:\mousebrainmicro\acquisition\2016-02-21\2016-02-21\00\00033\00033-ngc.microscope';
-% fields = {'x_overlap_um','y_overlap','x_size_um','y_size_um'};
-
 %% Validate inputs
 if ~ischar(fileLoc)
     error('File location is of type %s and must be a string',class(fileLoc));
