@@ -59,7 +59,9 @@ for iDay = 1:nDays
             cFile = fileList{iFile};
             %% Read file.
             try % Catch smaller file
+                tic
                 I = readTifFast(fullfile(mainFolder,cDay,cSub,cFile,[cFile,'-ngc.0.tif']), imSize,frames, 'uint16');
+                toc
                 fprintf('%s - %s - %s\tFrame: %i File Frame: %i\n',cDay,cSub,cFile,count,frameCount);
                 I = mean(I,3);
                 stack(:,:,frameCount) = I;
