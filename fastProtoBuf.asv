@@ -48,8 +48,8 @@ for iField = 1: length(fields)
     % Check for object of property.
     if length(fields{iField})==2
         searchStr = sprintf('(?<=%s \\{)(.*?\\})',fields{iField}{1});
-        searchText = char(regexp(protoText,searchStr,'match'));
-        fields{iField}=fields{iField}{2};
+        searchText = regexp(protoText,searchStr,'match');
+        fields{iField}{1}=fields{iField}{1}
     else
         searchText = protoText;
     end
