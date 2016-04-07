@@ -4,7 +4,6 @@ function generateAVGs(mainFolder,outputFolder,varargin)
 %   Function scans content of main folder and outputs AVGs stacks at
 %   requested location. Used for testing quality control.
 %
-% Syntax:  bilinearJobList( mainFolder,outputFolder, imSize, frames, bufferSize )
 %
 % Inputs:
 %       mainFolder          - Main directory of tile database (must be full,unmapped, path).

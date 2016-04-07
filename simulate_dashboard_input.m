@@ -30,9 +30,11 @@ cFile = fullfile(trainingFolder,sprintf('%i.tif',cFile)); % File from which to r
 cFrame = mod(iTile,bufferSize); % frame in file.
 I = imread(cFile,cFrame);
 
-% get tile Info.
-
-
+% get tile Info. (move to tilequalitycontrol)
+[pathstr,name,~] = fileparts(char(filePaths{1}(iTile,:)));
+name = regexp(name,'\d{5}-ngc','match');
+microFile = fullfile(pathstr,[char(name{1}),'.microscope']);
+TileInfo = fastProtoBuf( microFile, {''}, varargin )
 if isempty(hIm)
    hIm = imshow(I,[str2double(info.lowBox.String), str2double(info.highBox.String)]);
 else
