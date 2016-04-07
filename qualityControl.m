@@ -9,8 +9,12 @@ if nargin<5, figHandle = [];end
 %% Hard coded Parameters.
 imSize = [1536,1024];   % PRedetermined size of images.
 frameAvg = 100:105;     % Frames read for averaging.
-scaleFactor = 0.2;        % Determines size of stored thumbnail.
+scaleFactor = 0.2;      % Determines size of stored thumbnail.
+dZThreshold = 0.2;       % Slice thickness threshold in mm.
+
+% Create some variables.
 tileInfo = [];
+varargout{1} = [];
 
 %% Determine sample ID by start date.
 sampleID = regexp(tileFile,'(?<=acquisition\\)\d{4}-\d{2}-\d{2}','match');
@@ -58,7 +62,7 @@ end
 protoLoc = [tileFile(1:end-6),'.microscope'];
 try
     tileInfo.FOV = fastProtoBuf( protoLoc, {'x_size_um','y_size_um','x_overlap_um','y_overlap_um'} );
-    tileInfo.pos_um = fastProtoBuf( protoLoc,{{'last_target_mm','x'},{'last_target_mm','y'},{'last_target_mm','z'}});
+    tileInfo.pos_mm = fastProtoBuf( protoLoc,{{'last_target_mm','x'},{'last_target_mm','y'},{'last_target_mm','z'}});
     tileInfo.x_pix_size = tileInfo.FOV.x_size_um/imSize(2); tileInfo.y_pix_size = tileInfo.FOV.y_size_um/imSize(2);
 catch
     outputCode = 410; outputMsg = 'Could access microscope file';
@@ -70,11 +74,23 @@ protoLoc = [tileFile(1:end-6),'.acquisition'];
 try
     tileInfo.pos_lat = fastProtoBuf( protoLoc, {{'current_lattice_position','x'},{'current_lattice_position','y'},{'current_lattice_position','z'}} );
 catch
-    %some logging here.
+    tileInfo.pos_lat = struct('x',[],'y',[],'z',[]);
 end
 
-%% Slice Thickness check.
+%% Calls to quality checks %%%%
 
+    %% Slice Thickness check.
+    if ~isempty(QC) && ~isempty(tileInfo.pos_lat.z)
+        [code,msg,deltaZ] = sliceCheck( tileInfo, QC, dZThreshold );
+        deltaZ
+        if code == 300
+            outputCode = 300; outputMsg = 'Slice thickness was over thresold';
+            return
+        end
+    end
+    
+    %% Blocked Objective detection.
+    
 
 %% Store data.
 QC = [QC;tileInfo];

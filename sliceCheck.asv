@@ -1,8 +1,6 @@
-function [ outputCode,outputMsg,sliceThickness ]= sliceCheck( tileInfo,QC, threshold )
+function [ outputCode,outputMsg ]= sliceCheck( tileInfo,QC, threshold )
 %sliceCheck Takes tile position info from this tile and previous tiles to
 %check that slice thickness is within expected range.
-
-sliceThickness = 0;
 
 % Find tiles that were on previous slice (lattice Z -1)
 prevZ = [QC.pos_lat];
@@ -17,14 +15,15 @@ else
     % get minimum z pos (mm)
     minZ = [QC(prevZ).pos_mm];
     minZ = min([minZ.z]);
-    sliceThickness = tileInfo.pos_mm.z-minZ;
+    tileInfo.pos_mm.z-minZ
     % Check if slice thickness is over threshold.
-    if sliceThickness>threshold
-        outputCode = 300; outputMsg = 'Slice thickness was over threshold';
-    else
-        outputCode = 100; outputMsg = 'Okay';
-    end
+    if tileInfo.pos_mm.z-minZ>threshold
+        outputCode = 300; outputMsg = 'Slice thickness was over 
 end
+
+
+
+
 
 end
 

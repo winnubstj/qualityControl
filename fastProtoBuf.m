@@ -59,7 +59,7 @@ for iField = 1: length(fields)
     
     % Convert value.
     if isempty(value)
-        warning('Field %s not found',fields{iField});
+        error('Field %s not found',fields{iField});
         value = [];
     else
     if length(value)>1
