@@ -4,7 +4,7 @@
 
 %% Parameters
 mainFolder = 'Y:\mousebrainmicro\acquisition\2016-04-04\Data\';
-storeFile = 'C:\dashTemp\store.mat';
+storeFolder = 'C:\dashTemp\';
 paramA = 0;
 paramB = 0;
 displayRange = [10,99]; %in percentage.
@@ -47,7 +47,7 @@ for iDay = 1:nDays
         for iFile = 1:nFiles
             cFile = fullfile(mainFolder, cDay, cSub, fileList{iFile},[fileList{iFile},'-ngc.0.tif']);
             %% Call quality control like the dashboard
-            [code,msg,Iavg] = qualityControl( cFile,storeFile, paramA , paramB );
+            [code,msg,Iavg] = qualityControl( cFile,storeFolder, paramA , paramB );
             %% Display image
             % get display range
             Ipix = reshape(Iavg,[],1);
