@@ -25,15 +25,18 @@ end
 % Store other usefull directories etc.
 tileInfo.sampleID = char(sampleID);
 tileInfo.mainFolder = char(regexp(tileFile,'.*(?=\d{4}-\d{2}-\d{2}\\\d{2}\\\d{5}\\)','match'));
-tileInfo.folder = char(regexp(tileFile,'\d{4}-\d{2}-\d{2}\\\d{2}\\\d{5}\\','match'));
+tileInfo.folder = char(regexp(tileFile,'\d{4}-\d{2}-\d{2}\\\d{2}\\\d{5}','match'));
+qcFolder = fullfile(storeFolder,tileInfo.sampleID);
+if isempty(dir(qcFolder)), mkdir(qcFolder);end
+
+%% Open/create loggin file.
+logFile = fullfile(qcFolder,'log.txt');
+fid = fopen(logFile,'a');
+logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
+c = onCleanup(@()fclose(fid)); % Close log file on cleanup.
 
 %% Try to load previous store or create new.
 try
-    qcFolder = fullfile(storeFolder,tileInfo.sampleID);
-    if isempty(dir(qcFolder))
-        mkdir(qcFolder);
-        %some logging here.
-    end
     qcFile = fullfile(storeFolder,tileInfo.sampleID,'QC.mat');
     if isempty(dir(qcFile))
         QC = [];
@@ -43,6 +46,8 @@ try
     end
 catch
     outputCode = 430; outputMsg = 'Could not access/create QC storage file.';
+    logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
+    return
 end
 
 %% Set default output code (Okay).
@@ -55,6 +60,7 @@ try
     tileInfo.Iavg = imresize(Iavg,scaleFactor);
 catch
     outputCode = 400; outputMsg = 'Could not open tile image for reading';
+    logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
     return
 end
 
@@ -64,8 +70,10 @@ try
     tileInfo.FOV = fastProtoBuf( protoLoc, {'x_size_um','y_size_um','x_overlap_um','y_overlap_um'} );
     tileInfo.pos_mm = fastProtoBuf( protoLoc,{{'last_target_mm','x'},{'last_target_mm','y'},{'last_target_mm','z'}});
     tileInfo.x_pix_size = tileInfo.FOV.x_size_um/imSize(2); tileInfo.y_pix_size = tileInfo.FOV.y_size_um/imSize(2);
+    logMessage(fid,sprintf('\t\tx: %.3f y: %.3f z: %.3f',tileInfo.pos_mm.x,tileInfo.pos_mm.y,tileInfo.pos_mm.z));
 catch
     outputCode = 410; outputMsg = 'Could access microscope file';
+    logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
     return
 end
 
@@ -81,10 +89,11 @@ end
 
     %% Slice Thickness check.
     if ~isempty(QC) && ~isempty(tileInfo.pos_lat.z)
-        [code,msg,deltaZ] = sliceCheck( tileInfo, QC, dZThreshold );
-        deltaZ
+        [code,~,deltaZ] = sliceCheck( tileInfo, QC, dZThreshold );
+        logMessage(fid,sprintf('\t\tdelta Z: %.3f',deltaZ));
         if code == 300
-            outputCode = 300; outputMsg = 'Slice thickness was over thresold';
+            outputCode = 300; outputMsg = 'Slice thickness was over threshold';
+            logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
             return
         end
     end
@@ -96,8 +105,10 @@ end
 QC = [QC;tileInfo];
 try
     save(qcFile,'QC');
+    assert(1);
 catch
     outputCode = 430; outputMsg = 'Could not store QC storage file.';
+    logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
 end
 
 %% Send default output if no error.
