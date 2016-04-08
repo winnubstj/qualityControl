@@ -3,7 +3,7 @@ function success = logMessage(fid,  str, varargin)
 if nargin<3, timeStamp = false;else timeStamp =varargin{1}; end %Time stamp on by default.
 
 if timeStamp
- str = sprintf('[%s] %s',datestr(now,'HH:mm:ss'),str);
+ str = sprintf('[%s] %s',datestr(now,'HH:MM:SS'),str);
 end
 % log to console.
 if ~isdeployed, fprintf('\n%s',str); end

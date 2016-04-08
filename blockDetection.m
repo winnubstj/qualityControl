@@ -3,7 +3,6 @@ function [ code, msg,tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, par
 %objective.
 % requires lat position.
 %% Hardcoded parameters.
-paramA = 11250;
 shadowThres     = 75;   % as percentage of gelatine intensity -'dark' intensity.
 areaThres       = 10;   % as percentage of total area.
 counterThres    = 2;    % number of tiles that need to have failed check to trigger error code.

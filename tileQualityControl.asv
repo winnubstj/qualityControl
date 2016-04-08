@@ -1,12 +1,8 @@
-function [ outputCode,outputMsg,varargout ] = qualityControl( tileFile,storeFolder, paramA , paramB, varargin )
+function [ outputCode,outputMsg,varargout ] = tileQualityControl( tileFile,storeFolder, imSize, paramA , paramB, varargin )
 %tileQualityControl Monitors quality of aquired image tiles.
 %Function reads in provided tiff files and analyzes different aspect of the imaging quality for
 %instance the obstruction of the objective.
 % Add channel selection?
-
-%% Setting optional inputs.
-if nargin<5, figHandle = [];end
-
 %% Hard coded Parameters.
 imSize = [1536,1024];   % PRedetermined size of images.
 frameAvg = 100:105;     % Frames read for averaging.
@@ -33,7 +29,7 @@ if isempty(dir(qcFolder)), mkdir(qcFolder);end
 %% Open/create loggin file.
 logFile = fullfile(qcFolder,'log.txt');
 fid = fopen(logFile,'a');
-% logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
+logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
 c = onCleanup(@()fclose(fid)); % Close log file on cleanup.
 
 %% Try to load previous store or create new.
@@ -98,7 +94,8 @@ end
     %% Slice Thickness check.
     if ~isempty(QC) && ~isempty(tileInfo.pos_lat.z)
         [code,~,deltaZ] = sliceCheck( tileInfo, QC, dZThreshold );
-%         logMessage(fid,sprintf('\t\tdelta Z: %.3f',deltaZ));
+        logMessage(fid,sprintf('\t\tdelta Z: %.3f',deltaZ));
+
         if code == 300
             outputCode = 300; outputMsg = 'Slice thickness was over threshold';
             logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
@@ -107,13 +104,8 @@ end
     end
     
     %% Blocked Objective detection.
-    [ code, msg, tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB );
-    if code ~=100
-        outputCode = 500; outputMsg = msg;
-        logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
-        logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
-        return
-    end
+    [ code, msg, tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB, fid );
+    
 
 %% Store data.
 QC = [QC;tileInfo];
@@ -124,8 +116,22 @@ catch
     logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
 end
 
+%% throwing error code of blocked objective after save for counter persistence.
+if code ~=100
+    outputCode = 500; outputMsg = msg;
+    logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
+    return
+end
+
 %% Send default output if no error.
-if outputCode == 100, varargout{1} = Iavg; end
+if outputCode == 100 
+    varargout{1} = Iavg; 
+else
+    recipient = 'winnubstj@janelia.hhmi.org';
+    subject = sprintf('%s. Error Code %i',tileInfo.folder, outputCode);
+    message = sprintf('Sample %s has run into error Code %i.\n%s',tileInfo.folder,outputCode, outputMsg);
+    matlabmail(recipient, message, subject)
+end
 
 
 end

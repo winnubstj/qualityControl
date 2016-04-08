@@ -1,12 +1,8 @@
-function [ outputCode,outputMsg,varargout ] = qualityControl( tileFile,storeFolder, imSize, paramA , paramB, varargin )
+function [ outputCode,outputMsg,varargout ] = tileQualityControl( tileFile,storeFolder, imSize, paramA , paramB, varargin )
 %tileQualityControl Monitors quality of aquired image tiles.
 %Function reads in provided tiff files and analyzes different aspect of the imaging quality for
 %instance the obstruction of the objective.
 % Add channel selection?
-a=1
-
-paramA
-paramB
 %% Hard coded Parameters.
 imSize = [1536,1024];   % PRedetermined size of images.
 frameAvg = 100:105;     % Frames read for averaging.
@@ -33,7 +29,7 @@ if isempty(dir(qcFolder)), mkdir(qcFolder);end
 %% Open/create loggin file.
 logFile = fullfile(qcFolder,'log.txt');
 fid = fopen(logFile,'a');
-% logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
+logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
 c = onCleanup(@()fclose(fid)); % Close log file on cleanup.
 
 %% Try to load previous store or create new.
@@ -102,12 +98,14 @@ end
         if code == 300
             outputCode = 300; outputMsg = 'Slice thickness was over threshold';
             logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
+            errorMail( tileInfo, outputCode,outputMsg )
             return
         end
     end
     
     %% Blocked Objective detection.
     [ code, msg, tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB, fid );
+    
 
 %% Store data.
 QC = [QC;tileInfo];
@@ -122,6 +120,7 @@ end
 if code ~=100
     outputCode = 500; outputMsg = msg;
     logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
+    errorMail( tileInfo, outputCode,outputMsg )
     return
 end
 
