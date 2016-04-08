@@ -2,6 +2,7 @@ function [ outputCode,outputMsg,varargout ] = qualityControl( tileFile,storeFold
 %tileQualityControl Monitors quality of aquired image tiles.
 %Function reads in provided tiff files and analyzes different aspect of the imaging quality for
 %instance the obstruction of the objective.
+% Add channel selection?
 
 %% Setting optional inputs.
 if nargin<5, figHandle = [];end
@@ -32,7 +33,7 @@ if isempty(dir(qcFolder)), mkdir(qcFolder);end
 %% Open/create loggin file.
 logFile = fullfile(qcFolder,'log.txt');
 fid = fopen(logFile,'a');
-logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
+% logMessage(fid,sprintf('Tile: %s',tileInfo.folder),true);
 c = onCleanup(@()fclose(fid)); % Close log file on cleanup.
 
 %% Try to load previous store or create new.
@@ -73,9 +74,11 @@ end
 protoLoc = [tileFile(1:end-6),'.microscope'];
 try
     tileInfo.FOV = fastProtoBuf( protoLoc, {'x_size_um','y_size_um','x_overlap_um','y_overlap_um'} );
+    tileInfo.autotile = fastProtoBuf( protoLoc, {{'autotile','intensity_threshold'},{'autotile','area_threshold'}} );
+    tileInfo.trip_detect = fastProtoBuf( protoLoc, {{'trip_detect','intensity_threshold'}} );
     tileInfo.pos_mm = fastProtoBuf( protoLoc,{{'last_target_mm','x'},{'last_target_mm','y'},{'last_target_mm','z'}});
     tileInfo.x_pix_size = tileInfo.FOV.x_size_um/imSize(2); tileInfo.y_pix_size = tileInfo.FOV.y_size_um/imSize(2);
-    logMessage(fid,sprintf('\t\tx: %.3f y: %.3f z: %.3f',tileInfo.pos_mm.x,tileInfo.pos_mm.y,tileInfo.pos_mm.z));
+%     logMessage(fid,sprintf('\t\tx: %.3f y: %.3f z: %.3f',tileInfo.pos_mm.x,tileInfo.pos_mm.y,tileInfo.pos_mm.z));
 catch
     outputCode = 410; outputMsg = 'Could access microscope file';
     logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
@@ -95,7 +98,7 @@ end
     %% Slice Thickness check.
     if ~isempty(QC) && ~isempty(tileInfo.pos_lat.z)
         [code,~,deltaZ] = sliceCheck( tileInfo, QC, dZThreshold );
-        logMessage(fid,sprintf('\t\tdelta Z: %.3f',deltaZ));
+%         logMessage(fid,sprintf('\t\tdelta Z: %.3f',deltaZ));
         if code == 300
             outputCode = 300; outputMsg = 'Slice thickness was over threshold';
             logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
@@ -104,7 +107,7 @@ end
     end
     
     %% Blocked Objective detection.
-    [ code, msg ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB );
+    [ code, msg, tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB, fid );
 
 %% Store data.
 QC = [QC;tileInfo];
@@ -113,6 +116,13 @@ try
 catch
     outputCode = 430; outputMsg = 'Could not store QC storage file.';
     logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
+end
+
+%% throwing error code of blocked objective after save for counter persistence.
+if code ~=100
+    outputCode = 500; outputMsg = msg;
+    logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));
+    return
 end
 
 %% Send default output if no error.

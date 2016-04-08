@@ -44,7 +44,7 @@ for iDay = 1:nDays
         
         %% Go through files.
         nFiles = size(fileList,1);
-        for iFile = 50:nFiles
+        for iFile = 1:nFiles
             cFile = fullfile(mainFolder, cDay, cSub, fileList{iFile},[fileList{iFile},'-ngc.0.tif']);
             %% Call quality control like the dashboard
             [code,msg,Iavg] = qualityControl( cFile,storeFolder, paramA , paramB );
