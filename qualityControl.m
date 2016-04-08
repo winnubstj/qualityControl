@@ -104,7 +104,7 @@ end
     end
     
     %% Blocked Objective detection.
-    
+    [ code, msg ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB );
 
 %% Store data.
 QC = [QC;tileInfo];

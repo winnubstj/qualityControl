@@ -1,0 +1,14 @@
+function [ code, msg ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB )
+%BlockDetection. Performs the detection of bubble or debris blocking the
+%objective.
+
+code = 100;
+msg = 'Okay';
+
+figure;
+imshow(Iavg,[]);
+%% Crop overlap regions image.
+x_overceil(tileInfo.FOV.x_overlap_um/tileInfo.x_pix_size)
+
+end
+
