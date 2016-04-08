@@ -57,12 +57,10 @@ outputCode = 100; outputMsg = 'Okay';
 try
     I = readTifFast(tileFile, imSize,frameAvg, 'uint16');
     Iavg = uint16(mean(I,3));
-%     % store 8bit thumbnail.
-%     tileInfo.Iavg = imresize(Iavg,scaleFactor);
-%     tileInfo.Iavg = double(tileInfo.Iavg)/65535;
-%     range = stretchlim(tileInfo.Iavg,[0.2,0.98]);
-%     tileInfo.Iavg = imadjust(tileInfo.Iavg,range,[0 1]);
-%     tileInfo.Iavg = im2uint8(tileInfo.Iavg);
+    tileInfo.Iavg = imresize(Iavg,scaleFactor);
+    tileInfo.Iavg = double(tileInfo.Iavg)/65535;
+    range = stretchlim(tileInfo.Iavg,[0.15,0.98]) 
+    tileInfo.Iavg = imadjust(tileInfo.Iavg,range,[0 1]);
 catch
     outputCode = 400; outputMsg = 'Could not open tile image for reading';
     logMessage(fid,sprintf('\tError Code %i: %s',outputCode, outputMsg));

@@ -29,7 +29,7 @@ dayList = vertcat(dayList{:});
 
 %% Go through days
 nDays = size(dayList,1);
-for iDay = 2:nDays
+for iDay = 1:nDays
     cDay = dayList{iDay};
     %% Get sub-folders.
     subList = dir(fullfile(mainFolder,cDay));
