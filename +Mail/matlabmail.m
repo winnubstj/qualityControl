@@ -23,11 +23,6 @@ function recipient = matlabmail(recipient, message, subject, sender, psswd)
 % See also SENDMAIL
 
 
-if nargin<4
-    sender = 'dummyMouseLight@gmail.com';
-    psswd = 'WeareMouseLight';
-end
-
 setpref('Internet','E_mail',sender);
 setpref('Internet','SMTP_Server','smtp.gmail.com');
 setpref('Internet','SMTP_Username',sender);

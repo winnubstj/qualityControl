@@ -91,37 +91,37 @@ end
     if ~isempty(QC) && ~isempty(tileInfo.pos_lat.z)
         [code,~,~] = sliceCheck( tileInfo, QC, outParam.sliceThick.threshold);
         if code ~= 100
-            [ outputCode,outputMsg ] = processError( outParam.sliceThick,fid,tileInfo,outputCode,outputMsg,Settings );
+            [ outputCode,outputMsg ] = processError( outParam.sliceThick,fid,tileInfo,outputCode,outputMsg );
             return
         end
     end
     
-    %% Line offset check.
-    [code, ~] = lineOffsetCheck( I, tileInfo, outParam.lineOff.threshold );
-    if code ~= 100
-        [ outputCode,outputMsg ] = processError( outParam.lineOff,fid,tileInfo,outputCode,outputMsg,Settings );
-        return
-    end
-    
-    %% Blocked Objective detection.
-    [ code, ~, tileInfo ] = blockDetection( Iavg, tileInfo,QC, outParam.block.threshold, fid );
-
-%% Store data.
-QC = [QC;tileInfo];
-try
-    save(qcFile,'QC');
-catch
-    [ outputCode,outputMsg ] = processError( outParam.storage,fid,tileInfo,outputCode,outputMsg,Settings );
-end
-
-%% throwing error code of blocked objective after save for counter persistence.
-if code ~=100
-    [ outputCode,outputMsg ] = processError( outParam.block,fid,tileInfo,outputCode,outputMsg,Settings );
-    return
-end
-
-%% Send default output if no error.
-if outputCode == 100, varargout{1} = Iavg; end
-fprintf('\n');
+%     %% Line offset check.
+%     [code, ~] = lineOffsetCheck( I, tileInfo, outParam.lineOff.threshold );
+%     if code ~= 100
+%         [ outputCode,outputMsg ] = processError( outParam.lineOff,fid,tileInfo,outputCode,outputMsg );
+%         return
+%     end
+%     
+%     %% Blocked Objective detection.
+%     [ code, ~, tileInfo ] = blockDetection( Iavg, tileInfo,QC, outParam.block.threshold, fid );
+% 
+% %% Store data.
+% QC = [QC;tileInfo];
+% try
+%     save(qcFile,'QC');
+% catch
+%     [ outputCode,outputMsg ] = processError( outParam.storage,fid,tileInfo,outputCode,outputMsg );
+% end
+% 
+% %% throwing error code of blocked objective after save for counter persistence.
+% if code ~=100
+%     [ outputCode,outputMsg ] = processError( outParam.block,fid,tileInfo,outputCode,outputMsg );
+%     return
+% end
+% 
+% %% Send default output if no error.
+% if outputCode == 100, varargout{1} = Iavg; end
+% fprintf('\n');
 end
 

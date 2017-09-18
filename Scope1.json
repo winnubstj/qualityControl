@@ -1,0 +1,67 @@
+{
+	"ImageSize": 	[1536,1024],
+	"FrameAvg":		[100,105],
+	"Name":			"Scope 1",
+	"Channel":		0,
+	"storeFolder":	"C:/LogScope1/",
+	"mailingList":	["winnubstj@janelia.hhmi.org"],
+	"senderMail":	"dummyMouseLight@gmail.com",
+	"senderpass":	"WeareMouseLight",
+	"outParam":{
+		"default":{
+			"code": 	100,
+			"msg": 		"Okay"
+		},
+		"storage":{
+			"code": 	404,
+			"msg": 		"Could not access/create QC storage file",
+			"log":		true,
+			"mail": 	false,
+			"exit": 	false
+		},
+		"imageFile":{
+			"code": 	400,
+			"msg":		"Could not open image file",
+			"log":		true,
+			"mail":		false,
+			"exit":		false
+		},
+		"microMissing":{
+			"code":		405,
+			"msg":		"Could not access .microscope file",
+			"log":		true,
+			"mail":		false,
+			"exit":		false
+		},
+		"sliceThick":{
+			"code": 	700,
+			"msg":		"Slice thickness was over threshold",
+			"threshold":0.190,
+			"log":		true,
+			"mail":		true,
+			"exit":		true
+		},
+		"lineOff":{
+			"code": 	500,
+			"msg":		"Detected line offset was over threshold",
+			"threshold":2,
+			"log":		true,
+			"mail":		true,
+			"exit":		false
+		},
+		"block":{
+			"code":	300,
+			"msg":	"Detected blocked objective",
+			"threshold":{
+				"expInt":		11175,
+				"shadowThres": 	70,
+				"areaThres":	10,
+				"counterThres":	2
+			},
+			"log":	true,
+			"mail":	true,
+			"exit": true
+		}
+
+	}
+}
