@@ -3,11 +3,12 @@
 % qualityControl.
 
 %% Parameters
-mainFolder = 'Y:\mousebrainmicro\acquisition\2016-04-04\Data\';
+mainFolder = 'Y:\mousebrainmicro\data\2016-04-04\Tiling\';
 storeFolder = 'C:\dashTemp\';
-paramA = 0;
+paramA = 11300;
 paramB = 0;
 displayRange = [10,99]; %in percentage.
+imSize = [1536,1024];
 
 %% Output window.
 hFig = figure('Position',[400,400,700,900],'Name','Quality control test');
@@ -47,8 +48,10 @@ for iDay = 1:nDays
         for iFile = 50:nFiles
             cFile = fullfile(mainFolder, cDay, cSub, fileList{iFile},[fileList{iFile},'-ngc.0.tif']);
             %% Call quality control like the dashboard
-            [code,msg,Iavg] = qualityControl( cFile,storeFolder, paramA , paramB );
-            if code == 100
+            [code,msg,Iavg] = tileQualityControl( cFile,storeFolder,imSize, paramA , paramB );
+            code
+            msg
+            if code == 100 && ~isempty(Iavg)
                 %% Display image
                 % get display range
                 Ipix = reshape(Iavg,[],1);

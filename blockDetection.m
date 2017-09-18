@@ -1,11 +1,7 @@
-function [ code, msg,tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB,fid)
+function [ code, msg,tileInfo ] = blockDetection( Iavg, tileInfo,QC, threshold,fid)
 %BlockDetection. Performs the detection of bubble or debris blocking the
 %objective.
 % requires lat position.
-%% Hardcoded parameters.
-shadowThres     = 75;   % as percentage of gelatine intensity -'dark' intensity.
-areaThres       = 10;   % as percentage of total area.
-counterThres    = 2;    % number of tiles that need to have failed check to trigger error code.
 filterSize = 20;
 padSize = 500;
 edgeCrop = 15;
@@ -13,6 +9,7 @@ edgeCrop = 15;
 %% Some default values.
 percArea = 0;
 pass = true;
+fprintf('\n\tObjective block detection');
 %% Get previous counter or check for reset.
 % first tile counter 0
 if isempty(QC)
@@ -54,24 +51,26 @@ if autotileValue<=tileInfo.autotile.intensity_threshold
     
     %% calculate threshold value (percentage of gelatine-baseline Int).
     bgVal = mean2(Iavg(:,1:10)); % use slits for bg intensity.
-    thresValue = bgVal+((paramA-bgVal)*(shadowThres/100));
+    thresValue = bgVal+((threshold.expInt-bgVal)*(threshold.shadowThres/100));
     mask = IavgFilt<thresValue;
     se = strel('disk',10,8);
     mask =imerode(mask,se);
 
     %% Check area that is blocked.
     percArea = sum(sum(mask==1))/(size(mask,1)*size(mask,2))*100;
-    if percArea>areaThres
+    fprintf('\n\t\tAverage BG Int\t: %.0f\n\t\tAverage Baseline Int\t: %.0f\n\t\tExpected Int\t: %.0f\n\t\tBlocked Area\t: %.2f',bgVal,mean(mean(IavgFilt)),threshold.expInt,percArea);
+    if percArea>threshold.areaThres
         counter = counter + 1;
         pass = false;
         logMessage(fid,sprintf('Tile: %s\n\tBlocked area (%i%%),counter: %i, z: %i ',tileInfo.folder,round(percArea),counter,tileInfo.pos_lat.z),true);        
 %         figure; imshowpair(IavgFilt,mask,'blend');
-        if counter>=counterThres
+        if counter>=threshold.counterThres
             counter = 0; % reset so value is zero after restart.
-            code = 500; msg = sprintf('Blocked area (%i%%)',round(percArea));
+            code = 300; msg = sprintf('Blocked area (%i%%)',round(percArea));
         end
     end
-    
+else
+    fprintf('\n\t\tAuto tile reports found tissue');
 end
 %% update blockdetection info.
 tileInfo.blockDetection.percArea = percArea;

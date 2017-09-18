@@ -3,10 +3,7 @@ function [ outputCode,outputMsg,varargout ] = qualityControl( tileFile,storeFold
 %Function reads in provided tiff files and analyzes different aspect of the imaging quality for
 %instance the obstruction of the objective.
 % Add channel selection?
-a=1
 
-paramA
-paramB
 %% Hard coded Parameters.
 imSize = [1536,1024];   % PRedetermined size of images.
 frameAvg = 100:105;     % Frames read for averaging.
@@ -108,6 +105,9 @@ end
     
     %% Blocked Objective detection.
     [ code, msg, tileInfo ] = blockDetection( Iavg, tileInfo,QC, paramA, paramB, fid );
+    
+    %% Line offset check.
+    [code, msg] = lineOffsetCheck( Iavg, tileInfo,2 );
 
 %% Store data.
 QC = [QC;tileInfo];

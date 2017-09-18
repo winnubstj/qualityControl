@@ -39,9 +39,10 @@ end
 %% Read proto file.
 fid = fopen(fileLoc);
 if fid==-1, error('could not open file at %s',fileLoc); end
+c = onCleanup(@()fclose(fid)); % Close file on cleanup.
 protoText = fread(fid,inf);
 protoText = char(protoText');
-fclose(fid);
+
 %% Get all fields.
 fieldValues = {};
 for iField = 1: length(fields)
