@@ -3,6 +3,9 @@ function [ outputCode,outputMsg,varargout ] = tileQualityControl( tileFile,setti
 %Function reads in provided tiff files and analyzes different aspect of the imaging quality for
 %instance the obstruction of the objective.
 
+tileInfo = [];
+varargout{1} = [];
+
 %% Load settings file
 [mainFolder,~,~] = fileparts(which('tileQualityControl'));
 try
@@ -11,17 +14,12 @@ catch
     error('Could not read %s',fullfile(mainFolder,settingsFile));
 end
 outParam = Settings.outParam;
-
-% Create some variables.
-tileInfo = [];
-varargout{1} = [];
+% Set default output code (Okay).
+outputCode = outParam.default.code; outputMsg = outParam.default.msg;
 
 % Process tilefile.
 tileFile = strrep(tileFile,'.0.',sprintf('.%i.',Settings.Channel));
 tileFile = fullfile(tileFile);
-
-% Set default output code (Okay).
-outputCode = outParam.default.code; outputMsg = outParam.default.msg;
 
 %% Store usefull info on sample.
 sampleID = regexp(tileFile,'\d{4}-\d{2}-\d{2}','match');

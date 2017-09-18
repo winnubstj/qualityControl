@@ -7,9 +7,9 @@ padSize = 500;
 edgeCrop = 15;
 
 %% Some default values.
-percArea = 0;
 pass = true;
 fprintf('\n\tObjective block detection');
+
 %% Get previous counter or check for reset.
 % first tile counter 0
 if isempty(QC)
@@ -37,41 +37,33 @@ msg = 'Okay';
 x_overlap_pix = ceil(tileInfo.FOV.x_overlap_um/tileInfo.x_pix_size)+1;
 y_overlap_pix = ceil(tileInfo.FOV.y_overlap_um/tileInfo.y_pix_size)+1;
 IavgCrop = Iavg(x_overlap_pix:end-x_overlap_pix,y_overlap_pix:end-y_overlap_pix);
-
-%% Detect gelatine tile used for even background.
-pixValues = reshape(IavgCrop,[],1);
-autotileValue = prctile(pixValues,(1-(tileInfo.autotile.area_threshold))*100);
-if autotileValue<=tileInfo.autotile.intensity_threshold
     
-    %% Pad image and gaussian filter.
-    h = fspecial('gaussian',filterSize,7);
-    Ipad = padarray(IavgCrop,[padSize,padSize]);
-    IavgFilt = imfilter(Ipad,h);
-    IavgFilt = IavgFilt(padSize+edgeCrop:end-padSize-edgeCrop,padSize+edgeCrop:end-padSize-edgeCrop);
-    
-    %% calculate threshold value (percentage of gelatine-baseline Int).
-    bgVal = mean2(Iavg(:,1:10)); % use slits for bg intensity.
-    thresValue = bgVal+((threshold.expInt-bgVal)*(threshold.shadowThres/100));
-    mask = IavgFilt<thresValue;
-    se = strel('disk',10,8);
-    mask =imerode(mask,se);
+%% Pad image and gaussian filter.
+h = fspecial('gaussian',filterSize,7);
+Ipad = padarray(IavgCrop,[padSize,padSize]);
+IavgFilt = imfilter(Ipad,h);
+IavgFilt = IavgFilt(padSize+edgeCrop:end-padSize-edgeCrop,padSize+edgeCrop:end-padSize-edgeCrop);
 
-    %% Check area that is blocked.
-    percArea = sum(sum(mask==1))/(size(mask,1)*size(mask,2))*100;
-    fprintf('\n\t\tAverage BG Int\t: %.0f\n\t\tAverage Baseline Int\t: %.0f\n\t\tExpected Int\t: %.0f\n\t\tBlocked Area\t: %.2f',bgVal,mean(mean(IavgFilt)),threshold.expInt,percArea);
-    if percArea>threshold.areaThres
-        counter = counter + 1;
-        pass = false;
-        logMessage(fid,sprintf('Tile: %s\n\tBlocked area (%i%%),counter: %i, z: %i ',tileInfo.folder,round(percArea),counter,tileInfo.pos_lat.z),true);        
-%         figure; imshowpair(IavgFilt,mask,'blend');
-        if counter>=threshold.counterThres
-            counter = 0; % reset so value is zero after restart.
-            code = 300; msg = sprintf('Blocked area (%i%%)',round(percArea));
-        end
+%% calculate threshold value (percentage of gelatine-baseline Int).
+bgVal = mean2(Iavg(:,1:10)); % use slits for bg intensity.
+thresValue = bgVal+((threshold.expInt-bgVal)*(threshold.shadowThres/100));
+mask = IavgFilt<thresValue;
+se = strel('disk',10,8);
+mask =imerode(mask,se);
+
+%% Check area that is blocked.
+percArea = sum(sum(mask==1))/(size(mask,1)*size(mask,2))*100;
+fprintf('\n\t\tAverage BG Int\t: %.0f\n\t\tAverage Baseline Int\t: %.0f\n\t\tExpected Int\t: %.0f\n\t\tBlocked Area\t: %.2f',bgVal,mean(mean(IavgFilt)),threshold.expInt,percArea);
+if percArea>threshold.areaThres
+    counter = counter + 1;
+    pass = false;
+    logMessage(fid,sprintf('Tile: %s\n\tBlocked area (%i%%),counter: %i, z: %i ',tileInfo.folder,round(percArea),counter,tileInfo.pos_lat.z),true);        
+    if counter>=threshold.counterThres
+        counter = 0; % reset so value is zero after restart.
+        code = 300; msg = sprintf('Blocked area (%i%%)',round(percArea));
     end
-else
-    fprintf('\n\t\tAuto tile reports found tissue');
 end
+
 %% update blockdetection info.
 tileInfo.blockDetection.percArea = percArea;
 tileInfo.blockDetection.counter = counter;
