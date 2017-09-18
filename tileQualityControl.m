@@ -90,7 +90,9 @@ end
         [code,~,~] = sliceCheck( tileInfo, QC, outParam.sliceThick.threshold);
         if code ~= 100
             [ outputCode,outputMsg ] = processError( outParam.sliceThick,fid,tileInfo,outputCode,outputMsg,Settings );
-            return
+            if outputCode~=100
+                return
+            end
         end
     end
     
@@ -98,7 +100,9 @@ end
     [code, ~] = lineOffsetCheck( I, tileInfo, outParam.lineOff.threshold );
     if code ~= 100
         [ outputCode,outputMsg ] = processError( outParam.lineOff,fid,tileInfo,outputCode,outputMsg,Settings );
-        return
+        if outputCode~=100
+            return
+        end
     end
     
     %% Blocked Objective detection.
