@@ -1,9 +1,9 @@
 {
 	"ImageSize": 	[1536,1024],
 	"FrameAvg":		[100,105],
-	"Name":			"Scope 1",
+	"Name":			"Scope 2",
 	"Channel":		1,
-	"storeFolder":	"C:/LogScope1/",
+	"storeFolder":	"C:/LogScope2/",
 	"mailingList":	["winnubstj@janelia.hhmi.org"],
 	"senderMail":	"dummyMouseLight@gmail.com",
 	"senderpass":	"WeareMouseLight",
@@ -36,7 +36,7 @@
 		"sliceThick":{
 			"code": 	700,
 			"msg":		"Slice thickness was over threshold",
-			"threshold":0.185,
+			"threshold":0.190,
 			"log":		true,
 			"mail":		true,
 			"exit":		true
@@ -47,13 +47,13 @@
 			"threshold":2,
 			"log":		true,
 			"mail":		true,
-			"exit":		false
+			"exit":		true
 		},
 		"block":{
 			"code":	300,
 			"msg":	"Detected blocked objective",
 			"threshold":{
-				"expInt":		11775,
+				"relMinInt":	65,
 				"shadowThres": 	70,
 				"areaThres":	10,
 				"counterThres":	2

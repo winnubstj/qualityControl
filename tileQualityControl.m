@@ -119,7 +119,9 @@ end
 %% throwing error code of blocked objective after save for counter persistence.
 if code ~=100
     [ outputCode,outputMsg ] = processError( outParam.block,fid,tileInfo,outputCode,outputMsg,Settings );
-    return
+    if outputCode~=100
+        return
+    end
 end
 
 %% Send default output if no error.

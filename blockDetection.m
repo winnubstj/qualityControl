@@ -46,14 +46,19 @@ IavgFilt = IavgFilt(padSize+edgeCrop:end-padSize-edgeCrop,padSize+edgeCrop:end-p
 
 %% calculate threshold value (percentage of gelatine-baseline Int).
 bgVal = mean2(Iavg(:,1:10)); % use slits for bg intensity.
-thresValue = bgVal+((threshold.expInt-bgVal)*(threshold.shadowThres/100));
+expInt = bgVal + threshold.relMinInt; % expected intensity is background value + expected signal gelatine.
+thresValue = bgVal+((expInt-bgVal)*(threshold.shadowThres/100));
 mask = IavgFilt<thresValue;
 se = strel('disk',10,8);
 mask =imerode(mask,se);
 
 %% Check area that is blocked.
 percArea = sum(sum(mask==1))/(size(mask,1)*size(mask,2))*100;
-fprintf('\n\t\tAverage BG Int\t: %.0f\n\t\tAverage Baseline Int\t: %.0f\n\t\tExpected Int\t: %.0f\n\t\tBlocked Area\t: %.2f',bgVal,mean(mean(IavgFilt)),threshold.expInt,percArea);
+fprintf('\n\t\tAverage BG Int\t: %.0f',bgVal);
+fprintf('\n\t\tAverage Baseline Int\t: %.0f',mean(mean(IavgFilt)));
+fprintf('\n\t\tDifference in Int\t: %.0f',mean(mean(IavgFilt))-bgVal);
+fprintf('\n\t\tExpected Int\t: %.0f',expInt);
+fprintf('\n\t\tBlocked Area\t: %.2f',percArea);
 if percArea>threshold.areaThres
     counter = counter + 1;
     pass = false;
