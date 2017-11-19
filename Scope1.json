@@ -53,7 +53,7 @@
 			"code":	300,
 			"msg":	"Detected blocked objective",
 			"threshold":{
-				"expInt":		11775,
+				"relMinInt":	42,
 				"shadowThres": 	70,
 				"areaThres":	10,
 				"counterThres":	2
