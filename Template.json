@@ -1,7 +1,7 @@
 {
 	"ImageSize": 	[1536,1024],
 	"FrameAvg":		[100,105],
-	"Name":			"Scope X",
+	"Name":			"Scope 1",
 	"Channel":		1,
 	"storeFolder":	"C:/LogScope1/",
 	"mailingList":	["winnubstj@janelia.hhmi.org"],
