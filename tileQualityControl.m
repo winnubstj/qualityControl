@@ -7,11 +7,11 @@ tileInfo = [];
 varargout{1} = [];
 
 %% Load settings file
-[mainFolder,~,~] = fileparts(which('tileQualityControl'));
 try
-    Settings = JSON.loadjson(fullfile(mainFolder,settingsFile));
+    jsonText = fileread(fullfile(settingsFile));
+    Settings = jsondecode(jsonText);
 catch
-    error('Could not read %s',fullfile(mainFolder,settingsFile));
+    error('Could not read %s',fullfile(settingsFile));
 end
 outParam = Settings.outParam;
 % Set default output code (Okay).
